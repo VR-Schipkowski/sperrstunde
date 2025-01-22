@@ -134,7 +134,7 @@ class _HomePageState extends State<HomePage> {
                           tileColor: event.liked ? Colors.red : null,
                           leading: Text(event.time),
                           title: Text(event.title),
-                          subtitle: Text(event.venue),
+                          subtitle: Text('${event.category} - ${event.venue}'),
                           onLongPress: () => _toggleLike(event),
                           onTap: () => _showEventDetails(context, event),
                         );
