@@ -1,16 +1,12 @@
-# sperrstunde
+# Sperrstunde App
 
-A new Flutter project.
+Sperrstunde is a **Flutter-based mobile application** designed to bring you closer to the events listed on [sperrstunde.org](https://sperrstunde.org). It allows users to browse upcoming events, mark their favorites, and store them for easy access.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## Features
 
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- **Browse Events**: View a curated list of upcoming events from the Sperrstunde calendar.
+- **Mark Favorites**: Highlight events that interest you with a simple tap.
+- **Offline Access**: Store your favorite events locally to access them even without an internet connection.
+- **Modern Design**: Enjoy a sleek, user-friendly interface powered by Flutter.
