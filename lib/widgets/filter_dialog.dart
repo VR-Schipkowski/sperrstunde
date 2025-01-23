@@ -82,10 +82,14 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
           DropdownButtonFormField<String>(
             decoration: InputDecoration(labelText: 'Venue'),
             value: tempVenue.isNotEmpty ? tempVenue : null,
+            isExpanded: true,
             items: allVenues.map((venue) {
               return DropdownMenuItem<String>(
                 value: venue,
-                child: Text(venue),
+                child: Text(
+                  venue,
+                  overflow: TextOverflow.ellipsis, // Handle long text
+                ),
               );
             }).toList(),
             onChanged: (value) {
