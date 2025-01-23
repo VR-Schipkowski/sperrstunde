@@ -6,7 +6,12 @@ class Event {
   final String venue;
   final String time;
   final List<String> categories;
-  final String description;
+  final String? longDescription;
+  final String? description;
+  final String? imageUrl;
+  final String? url;
+  final String? price;
+  final String? sozialeMedia;
   bool liked;
 
   Event({
@@ -16,10 +21,15 @@ class Event {
     required this.time,
     required this.categories,
     required this.description,
+    this.imageUrl,
+    this.longDescription,
+    this.url,
+    this.price,
+    this.sozialeMedia,
     this.liked = false,
   });
 
-  factory Event.fromElement(dom.Element element) {
+  factory Event.fromElement(String Date, dom.Element element) {
     var date = element.querySelector('.event-date')?.text.trim() ?? '';
     var title = element.querySelector('.event-title h2 a')?.text.trim() ?? '';
     var venue = element.querySelector('.event-venue')?.text.trim() ?? '';

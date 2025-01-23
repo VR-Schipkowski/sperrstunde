@@ -44,9 +44,7 @@ class _HomePageState extends State<HomePage> {
     try {
       var fetchService = FetchService();
       dateBoxes = await fetchService.fetchWebpage();
-      print('Fetched data from web service');
     } catch (e) {
-      print('Error fetching data from web service: $e');
       FlutterError.reportError(FlutterErrorDetails(exception: e));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching data: $e')),
@@ -54,7 +52,6 @@ class _HomePageState extends State<HomePage> {
     }
     if (dateBoxes.isEmpty) {
       dateBoxes = await loadDateBoxes();
-      print('Loaded data from persistent storage');
     }
     if (mounted) {
       setState(() {
@@ -64,7 +61,6 @@ class _HomePageState extends State<HomePage> {
     await _saveDateBoxes();
     await _loadLikes();
     _calculateDateBoxesToShow();
-    print('Webpage fetched and data loaded');
   }
 
   Future<void> _saveDateBoxes() async {
