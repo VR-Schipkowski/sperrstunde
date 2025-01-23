@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:sperrstunde/models/date_box.dart';
-import 'package:sperrstunde/widgets/home_page.dart';
+import 'package:sperrstunde/models/event.dart';
+import 'package:sperrstunde/models/helper/filter.dart';
 
 class FilterDialogWidget extends StatefulWidget {
-  final List<String> filterCategories;
-  final FilterOptions filterOptions;
-  final String filterVenue;
-  final Function(List<String>, String) onApply;
+  final List<DateBox> allDateBoxes;
+  final Function(Filter) onApply;
   final Function() onCancel;
+  final Filter filter;
 
   FilterDialogWidget({
-    required this.filterOptions,
-    required this.filterCategories,
-    required this.filterVenue,
+    required this.allDateBoxes,
     required this.onApply,
     required this.onCancel,
+    required this.filter,
   });
 
   @override
@@ -29,15 +28,21 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
   @override
   void initState() {
     super.initState();
-    tempCategories = List.from(widget.filterCategories);
-    tempVenue = widget.filterVenue;
+    tempCategories = List.from(widget.filter.categories);
+    tempVenue = widget.filter.venues;
   }
 
   @override
   Widget build(BuildContext context) {
-    // Extract unique categories and venues from the events
-    Set<String> allCategories = widget.filterOptions.categories;
-    Set<String> allVenues = widget.filterOptions.venues;
+    // Extract unique categories and venues from the events Set<String> allCategories = {};
+    Set<String> allCategories = {};
+    Set<String> allVenues = {};
+    for (var dateBox in widget.allDateBoxes) {
+      for (var event in dateBox.events) {
+        allCategories.addAll(event.categories);
+        allVenues.add(event.venue);
+      }
+    }
 
     return AlertDialog(
       title: Text('Filter Events'),
@@ -70,6 +75,7 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
             ),
             onConfirm: (results) {
               tempCategories = results.cast<String>();
+              widget.filter.categories = tempCategories;
             },
             initialValue: tempCategories,
           ),
@@ -85,6 +91,7 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
             onChanged: (value) {
               if (value != null) {
                 tempVenue = value;
+                widget.filter.venues = tempVenue;
               }
             },
           ),
@@ -100,8 +107,27 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
         ),
         TextButton(
           onPressed: () {
-            widget.onApply(tempCategories, tempVenue);
-            Navigator.of(context).pop();
+            List<DateBox> filterdDateBoxes = [];
+            for (var dateBox in widget.allDateBoxes) {
+              List<Event> filterdEvents = [];
+              filterdEvents.addAll(
+                  dateBox.events.where((e) => widget.filter.checkEvent(e)));
+              if (filterdEvents.isNotEmpty) {
+                filterdDateBoxes
+                    .add(DateBox(date: dateBox.date, events: filterdEvents));
+              }
+            }
+            if (filterdDateBoxes.isEmpty) {
+              // Show warning if no events match the selected filters
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('No events match the selected filters.'),
+                ),
+              );
+            } else {
+              widget.onApply(widget.filter);
+              Navigator.of(context).pop();
+            }
           },
           child: Text('Apply'),
         ),

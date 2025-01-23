@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:sperrstunde/models/date_box.dart';
 import 'package:sperrstunde/models/event.dart';
+import 'package:sperrstunde/models/helper/filter.dart';
 import 'package:sperrstunde/services/fech_service.dart';
 import 'package:sperrstunde/widgets/filter_dialog.dart';
 
@@ -14,15 +14,26 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<DateBox> _dateBoxes = [];
+  List<DateBox> _dateBoxesToShow = [];
   Filter _filter = Filter(categories: [], venues: '');
-  bool _showOnlyLiked = false;
-  bool _showOnlyFilterd = false;
-  FilterOptions _filterOptions = FilterOptions(categories: {}, venues: {});
+  ValueNotifier<bool> _showOnlyLiked = ValueNotifier(false);
+  ValueNotifier<bool> _showOnlyFilterd = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
     _fetchWebpage();
+    _showOnlyLiked.addListener(_calculateDateBoxesToShow);
+    _showOnlyFilterd.addListener(_calculateDateBoxesToShow);
+  }
+
+  @override
+  void dispose() {
+    _showOnlyLiked.removeListener(_calculateDateBoxesToShow);
+    _showOnlyFilterd.removeListener(_calculateDateBoxesToShow);
+    _showOnlyLiked.dispose();
+    _showOnlyFilterd.dispose();
+    super.dispose();
   }
 
   Future<void> _fetchWebpage() async {
@@ -41,23 +52,7 @@ class _HomePageState extends State<HomePage> {
       _dateBoxes = dateBoxes;
     });
     _loadLikes();
-    setState(() {
-      _filterOptions = getFilterOptions();
-    });
-  }
-
-  FilterOptions getFilterOptions() {
-    Set<String> allCategories = {};
-    Set<String> allVenues = {};
-    for (var dateBox in _dateBoxes) {
-      for (var event in dateBox.events) {
-        allCategories.addAll(event.categories);
-        allVenues.add(event.venue);
-      }
-    }
-    allCategories;
-    allVenues;
-    return FilterOptions(categories: allCategories, venues: allVenues);
+    _calculateDateBoxesToShow();
   }
 
   Future<void> _saveDateBoxes() async {
@@ -89,9 +84,34 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _calculateDateBoxesToShow() {
+    if (!_showOnlyFilterd.value && !_showOnlyLiked.value) {
+      setState(() {
+        _dateBoxesToShow = _dateBoxes;
+      });
+    } else {
+      List<DateBox> dateBoxesToShow = [];
+      for (var dateBox in _dateBoxes) {
+        var filteredEvents = dateBox.events.where((event) {
+          bool matchesFilter =
+              !_showOnlyFilterd.value || _filter.checkEvent(event);
+          bool matchesLiked = !_showOnlyLiked.value || event.liked;
+          return matchesFilter && matchesLiked;
+        }).toList();
+        if (filteredEvents.isNotEmpty) {
+          dateBoxesToShow
+              .add(DateBox(date: dateBox.date, events: filteredEvents));
+        }
+      }
+      setState(() {
+        _dateBoxesToShow = dateBoxesToShow;
+      });
+    }
+  }
+
   void _toggleShowOnlyLiked() {
     setState(() {
-      _showOnlyLiked = !_showOnlyLiked;
+      _showOnlyLiked.value = !_showOnlyLiked.value;
     });
   }
 
@@ -118,26 +138,20 @@ class _HomePageState extends State<HomePage> {
           IconButton(
               onPressed: _showFilterDialog, icon: Icon(Icons.filter_list)),
           IconButton(
-            icon: Icon(_showOnlyLiked ? Icons.favorite : Icons.favorite_border),
+            icon: Icon(
+                _showOnlyLiked.value ? Icons.favorite : Icons.favorite_border),
             onPressed: _toggleShowOnlyLiked,
           ),
         ],
       ),
       body: RefreshIndicator(
         onRefresh: _fetchWebpage,
-        child: _dateBoxes.isEmpty
+        child: _dateBoxesToShow.isEmpty
             ? Text('No content found')
             : ListView.builder(
-                itemCount: _dateBoxes.length,
+                itemCount: _dateBoxesToShow.length,
                 itemBuilder: (context, index) {
-                  var dateBox = _dateBoxes[index];
-                  if ((_showOnlyLiked &&
-                          dateBox.events.every((event) => !event.liked)) ||
-                      (_showOnlyFilterd &&
-                          dateBox.events
-                              .every((event) => !checkEvent(event)))) {
-                    return SizedBox.shrink();
-                  }
+                  var dateBox = _dateBoxesToShow[index];
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -150,10 +164,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                       ),
                       Divider(),
-                      ...dateBox.events
-                          .where((event) => ((!_showOnlyLiked || event.liked) &&
-                              (!_showOnlyFilterd || checkEvent(event))))
-                          .map((event) {
+                      ...dateBox.events.map((event) {
                         return ListTile(
                           tileColor: event.liked ? Colors.red : null,
                           leading: Text(event.time),
@@ -216,39 +227,20 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) {
         return FilterDialogWidget(
-          filterOptions: _filterOptions,
-          filterCategories: _filter.categories,
-          filterVenue: _filter.venues,
-          onApply: (categories, venue) {
-            setState(() {
-              _filter.categories = categories;
-              _filter.venues = venue;
-              _showOnlyFilterd = true;
-            });
-          },
-          onCancel: () => setState(() => _showOnlyFilterd = false),
-        );
+            allDateBoxes: _dateBoxes,
+            onApply: (filter) {
+              setState(() {
+                _filter = filter;
+                _showOnlyFilterd.value = true;
+              });
+            },
+            onCancel: () {
+              setState(() {
+                _showOnlyFilterd.value = false;
+              });
+            },
+            filter: _filter);
       },
     );
   }
-}
-
-class Filter {
-  List<String> categories = [];
-  String venues = '';
-  Filter({required this.categories, required this.venues});
-
-  bool checkEvent(Event event) {
-    bool matchesCategory = categories.isEmpty ||
-        event.categories.any((category) => categories.contains(category));
-    bool matchesVenue = venues.isEmpty || event.venue == venues;
-    return matchesCategory && matchesVenue;
-  }
-}
-
-class FilterOptions {
-  Set<String> categories = {};
-  Set<String> venues = {};
-
-  FilterOptions({required this.categories, required this.venues});
 }
