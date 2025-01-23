@@ -1,10 +1,7 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:html/parser.dart' as html_parser;
-import 'package:html/dom.dart' as dom;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:sperrstunde/models/date_box.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/services/fech_service.dart';
@@ -16,7 +13,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<DateBox> _dateBoxes = [];
+  Filter _filter = Filter(categories: [], venues: '');
   bool _showOnlyLiked = false;
+  bool _showOnlyFilterd = false;
+  FilterOptions _filterOptions = FilterOptions(categories: {}, venues: {});
 
   @override
   void initState() {
@@ -40,6 +40,23 @@ class _HomePageState extends State<HomePage> {
       _dateBoxes = dateBoxes;
     });
     _loadLikes();
+    setState(() {
+      _filterOptions = getFilterOptions();
+    });
+  }
+
+  FilterOptions getFilterOptions() {
+    Set<String> allCategories = {};
+    Set<String> allVenues = {};
+    for (var dateBox in _dateBoxes) {
+      for (var event in dateBox.events) {
+        allCategories.addAll(event.categories);
+        allVenues.add(event.venue);
+      }
+    }
+    allCategories;
+    allVenues;
+    return FilterOptions(categories: allCategories, venues: allVenues);
   }
 
   Future<void> _saveDateBoxes() async {
@@ -98,6 +115,8 @@ class _HomePageState extends State<HomePage> {
         title: Text('Sperrstunde'),
         actions: [
           IconButton(
+              onPressed: _showFilterDialog, icon: Icon(Icons.filter_list)),
+          IconButton(
             icon: Icon(_showOnlyLiked ? Icons.favorite : Icons.favorite_border),
             onPressed: _toggleShowOnlyLiked,
           ),
@@ -111,8 +130,11 @@ class _HomePageState extends State<HomePage> {
                 itemCount: _dateBoxes.length,
                 itemBuilder: (context, index) {
                   var dateBox = _dateBoxes[index];
-                  if (_showOnlyLiked &&
-                      dateBox.events.every((event) => !event.liked)) {
+                  if ((_showOnlyLiked &&
+                          dateBox.events.every((event) => !event.liked)) ||
+                      (_showOnlyFilterd &&
+                          dateBox.events
+                              .every((event) => !checkEvent(event)))) {
                     return SizedBox.shrink();
                   }
                   return Column(
@@ -128,13 +150,15 @@ class _HomePageState extends State<HomePage> {
                       ),
                       Divider(),
                       ...dateBox.events
-                          .where((event) => !_showOnlyLiked || event.liked)
+                          .where((event) => ((!_showOnlyLiked || event.liked) &&
+                              (!_showOnlyFilterd || checkEvent(event))))
                           .map((event) {
                         return ListTile(
                           tileColor: event.liked ? Colors.red : null,
                           leading: Text(event.time),
                           title: Text(event.title),
-                          subtitle: Text('${event.category} - ${event.venue}'),
+                          subtitle: Text(
+                              '${event.categories.join(', ')} - ${event.venue}'),
                           onLongPress: () => _toggleLike(event),
                           onTap: () => _showEventDetails(context, event),
                         );
@@ -145,6 +169,10 @@ class _HomePageState extends State<HomePage> {
               ),
       ),
     );
+  }
+
+  bool checkEvent(Event event) {
+    return _filter.checkEvent(event);
   }
 
   void _showEventDetails(BuildContext context, Event event) {
@@ -160,7 +188,7 @@ class _HomePageState extends State<HomePage> {
                 Text('Date: ${event.date}'),
                 Text('Time: ${event.time}'),
                 Text('Venue: ${event.venue}'),
-                Text('Category: ${event.category}'),
+                Text('Categories: ${event.categories.join(', ')}'),
                 Text('Description: ${event.description}'),
               ],
             ),
@@ -181,4 +209,117 @@ class _HomePageState extends State<HomePage> {
       },
     );
   }
+
+  void _showFilterDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        List<String> tempCategories = List.from(_filter.categories);
+        String tempVenue = _filter.venues;
+
+        // Extract unique categories and venues from the events
+        Set<String> allCategories = {};
+        Set<String> allVenues = {};
+        for (var dateBox in _dateBoxes) {
+          for (var event in dateBox.events) {
+            allCategories.addAll(event.categories);
+            allVenues.add(event.venue);
+          }
+        }
+
+        return AlertDialog(
+          title: Text('Filter Events'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              MultiSelectDialogField(
+                items: allCategories
+                    .map((category) => MultiSelectItem(category, category))
+                    .toList(),
+                title: Text('Categories'),
+                selectedColor: Colors.blue,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(10)),
+                  border: Border.all(
+                    color: Colors.grey,
+                    width: 1,
+                  ),
+                ),
+                buttonIcon: Icon(
+                  Icons.category,
+                  color: Colors.blue,
+                ),
+                buttonText: Text(
+                  'Select Categories',
+                  style: TextStyle(
+                    color: Colors.blue[800],
+                    fontSize: 16,
+                  ),
+                ),
+                onConfirm: (results) {
+                  tempCategories = results.cast<String>();
+                },
+                initialValue: tempCategories,
+              ),
+              DropdownButtonFormField<String>(
+                decoration: InputDecoration(labelText: 'Venue'),
+                value: tempVenue.isNotEmpty ? tempVenue : null,
+                items: allVenues.map((venue) {
+                  return DropdownMenuItem<String>(
+                    value: venue,
+                    child: Text(venue),
+                  );
+                }).toList(),
+                onChanged: (value) {
+                  if (value != null) {
+                    tempVenue = value;
+                  }
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  _filter.categories = tempCategories;
+                  _filter.venues = tempVenue;
+                  _showOnlyFilterd;
+                });
+                Navigator.of(context).pop();
+              },
+              child: Text('Apply'),
+            ),
+            TextButton(
+              onPressed: () {
+                _showOnlyFilterd = false;
+                Navigator.of(context).pop();
+              },
+              child: Text('Reset'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class Filter {
+  List<String> categories = [];
+  String venues = '';
+  Filter({required this.categories, required this.venues});
+
+  bool checkEvent(Event event) {
+    bool matchesCategory = categories.isEmpty ||
+        event.categories.any((category) => categories.contains(category));
+    bool matchesVenue = venues.isEmpty || event.venue == venues;
+    return matchesCategory && matchesVenue;
+  }
+}
+
+class FilterOptions {
+  Set<String> categories = {};
+  Set<String> venues = {};
+
+  FilterOptions({required this.categories, required this.venues});
 }

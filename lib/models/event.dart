@@ -5,7 +5,7 @@ class Event {
   final String title;
   final String venue;
   final String time;
-  final String category;
+  final List<String> categories;
   final String description;
   bool liked;
 
@@ -14,7 +14,7 @@ class Event {
     required this.title,
     required this.venue,
     required this.time,
-    required this.category,
+    required this.categories,
     required this.description,
     this.liked = false,
   });
@@ -24,7 +24,9 @@ class Event {
     var title = element.querySelector('.event-title h2 a')?.text.trim() ?? '';
     var venue = element.querySelector('.event-venue')?.text.trim() ?? '';
     var time = element.querySelector('.event-time')?.text.trim() ?? '';
-    var category = element.querySelector('.event-categories a')?.text.trim() ?? '';
+    var categoriesString =
+        element.querySelector('.event-categories a')?.text.trim() ?? '';
+    var categories = categoriesString.split(',').map((e) => e.trim()).toList();
     var description = element.querySelector('.event-text p')?.text.trim() ?? '';
 
     return Event(
@@ -32,28 +34,28 @@ class Event {
       title: title,
       venue: venue,
       time: time,
-      category: category,
+      categories: categories,
       description: description,
     );
   }
 
   Map<String, dynamic> toJson() => {
-    'date': date,
-    'title': title,
-    'venue': venue,
-    'time': time,
-    'category': category,
-    'description': description,
-    'liked': liked,
-  };
+        'date': date,
+        'title': title,
+        'venue': venue,
+        'time': time,
+        'category': categories,
+        'description': description,
+        'liked': liked,
+      };
 
   factory Event.fromJson(Map<String, dynamic> json) => Event(
-    date: json['date'],
-    title: json['title'],
-    venue: json['venue'],
-    time: json['time'],
-    category: json['category'],
-    description: json['description'],
-    liked: json['liked'],
-  );
+        date: json['date'],
+        title: json['title'],
+        venue: json['venue'],
+        time: json['time'],
+        categories: json['category'],
+        description: json['description'],
+        liked: json['liked'],
+      );
 }
