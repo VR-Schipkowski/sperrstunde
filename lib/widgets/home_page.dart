@@ -5,6 +5,7 @@ import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:sperrstunde/models/date_box.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/services/fech_service.dart';
+import 'package:sperrstunde/widgets/filter_dialog.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -27,8 +28,8 @@ class _HomePageState extends State<HomePage> {
   Future<void> _fetchWebpage() async {
     List<DateBox> dateBoxes = [];
     try {
-      var fetch_service = FetchService();
-      dateBoxes = await fetch_service.fetchWebpage();
+      var fetchService = FetchService();
+      dateBoxes = await fetchService.fetchWebpage();
       _saveDateBoxes();
     } catch (e) {
       print(e);
@@ -214,90 +215,18 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (context) {
-        List<String> tempCategories = List.from(_filter.categories);
-        String tempVenue = _filter.venues;
-
-        // Extract unique categories and venues from the events
-        Set<String> allCategories = {};
-        Set<String> allVenues = {};
-        for (var dateBox in _dateBoxes) {
-          for (var event in dateBox.events) {
-            allCategories.addAll(event.categories);
-            allVenues.add(event.venue);
-          }
-        }
-
-        return AlertDialog(
-          title: Text('Filter Events'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              MultiSelectDialogField(
-                items: allCategories
-                    .map((category) => MultiSelectItem(category, category))
-                    .toList(),
-                title: Text('Categories'),
-                selectedColor: Colors.blue,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.all(Radius.circular(10)),
-                  border: Border.all(
-                    color: Colors.grey,
-                    width: 1,
-                  ),
-                ),
-                buttonIcon: Icon(
-                  Icons.category,
-                  color: Colors.blue,
-                ),
-                buttonText: Text(
-                  'Select Categories',
-                  style: TextStyle(
-                    color: Colors.blue[800],
-                    fontSize: 16,
-                  ),
-                ),
-                onConfirm: (results) {
-                  tempCategories = results.cast<String>();
-                },
-                initialValue: tempCategories,
-              ),
-              DropdownButtonFormField<String>(
-                decoration: InputDecoration(labelText: 'Venue'),
-                value: tempVenue.isNotEmpty ? tempVenue : null,
-                items: allVenues.map((venue) {
-                  return DropdownMenuItem<String>(
-                    value: venue,
-                    child: Text(venue),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  if (value != null) {
-                    tempVenue = value;
-                  }
-                },
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  _filter.categories = tempCategories;
-                  _filter.venues = tempVenue;
-                  _showOnlyFilterd;
-                });
-                Navigator.of(context).pop();
-              },
-              child: Text('Apply'),
-            ),
-            TextButton(
-              onPressed: () {
-                _showOnlyFilterd = false;
-                Navigator.of(context).pop();
-              },
-              child: Text('Reset'),
-            ),
-          ],
+        return FilterDialogWidget(
+          filterOptions: _filterOptions,
+          filterCategories: _filter.categories,
+          filterVenue: _filter.venues,
+          onApply: (categories, venue) {
+            setState(() {
+              _filter.categories = categories;
+              _filter.venues = venue;
+              _showOnlyFilterd = true;
+            });
+          },
+          onCancel: () => setState(() => _showOnlyFilterd = false),
         );
       },
     );
