@@ -6,6 +6,8 @@ import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/models/helper/filter.dart';
 import 'package:sperrstunde/services/fech_service.dart';
 import 'package:sperrstunde/widgets/filter_dialog.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sperrstunde/widgets/loading_screen.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -18,11 +20,12 @@ class _HomePageState extends State<HomePage> {
   Filter _filter = Filter(categories: [], venues: '');
   ValueNotifier<bool> _showOnlyLiked = ValueNotifier(false);
   ValueNotifier<bool> _showOnlyFilterd = ValueNotifier(false);
+  late Future<void> _fetchFuture;
 
   @override
   void initState() {
     super.initState();
-    _fetchWebpage();
+    _fetchFuture = _fetchWebpage();
     _showOnlyLiked.addListener(_calculateDateBoxesToShow);
     _showOnlyFilterd.addListener(_calculateDateBoxesToShow);
   }
@@ -41,18 +44,27 @@ class _HomePageState extends State<HomePage> {
     try {
       var fetchService = FetchService();
       dateBoxes = await fetchService.fetchWebpage();
-      _saveDateBoxes();
+      print('Fetched data from web service');
     } catch (e) {
-      print(e);
+      print('Error fetching data from web service: $e');
+      FlutterError.reportError(FlutterErrorDetails(exception: e));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error fetching data: $e')),
+      );
     }
     if (dateBoxes.isEmpty) {
       dateBoxes = await loadDateBoxes();
+      print('Loaded data from persistent storage');
     }
-    setState(() {
-      _dateBoxes = dateBoxes;
-    });
-    _loadLikes();
+    if (mounted) {
+      setState(() {
+        _dateBoxes = dateBoxes;
+      });
+    }
+    await _saveDateBoxes();
+    await _loadLikes();
     _calculateDateBoxesToShow();
+    print('Webpage fetched and data loaded');
   }
 
   Future<void> _saveDateBoxes() async {
@@ -131,67 +143,87 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Sperrstunde'),
-        actions: [
-          IconButton(
-              onPressed: () {
-                if (_showOnlyFilterd.value) {
-                  setState(() {
-                    _showOnlyFilterd.value = false;
-                  });
-                } else {
-                  _showFilterDialog();
-                }
-              },
-              icon: Icon(_showOnlyFilterd.value
-                  ? Icons.filter_list_alt
-                  : Icons.filter_list_off_outlined)),
-          IconButton(
-            icon: Icon(
-                _showOnlyLiked.value ? Icons.favorite : Icons.favorite_border),
-            onPressed: _toggleShowOnlyLiked,
-          ),
-        ],
-      ),
-      body: RefreshIndicator(
-        onRefresh: _fetchWebpage,
-        child: _dateBoxesToShow.isEmpty
-            ? Text('No content found')
-            : ListView.builder(
-                itemCount: _dateBoxesToShow.length,
-                itemBuilder: (context, index) {
-                  var dateBox = _dateBoxesToShow[index];
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 8.0),
-                        child: Text(
-                          dateBox.date,
-                          style: TextStyle(
-                              fontSize: 24, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                      Divider(),
-                      ...dateBox.events.map((event) {
-                        return ListTile(
-                          tileColor: event.liked ? Colors.red : null,
-                          leading: Text(event.time),
-                          title: Text(event.title),
-                          subtitle: Text(
-                              '${event.categories.join(', ')} - ${event.venue}'),
-                          onLongPress: () => _toggleLike(event),
-                          onTap: () => _showEventDetails(context, event),
-                        );
-                      })
-                    ],
-                  );
-                },
+    return FutureBuilder(
+        future: _fetchFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return LoadingScreen();
+          } else if (snapshot.hasError) {
+            return Scaffold(
+              body: Center(
+                child: Text('Error loading data'),
               ),
-      ),
-    );
+            );
+          } else {
+            return Scaffold(
+              appBar: AppBar(
+                title: SvgPicture.asset(
+                    'lib/assets/Sperrstunde_Logo-Schriftzug_RGB.svg',
+                    color: Color.fromARGB(255, 255, 95, 31)),
+                actions: [
+                  IconButton(
+                      onPressed: () {
+                        if (_showOnlyFilterd.value) {
+                          setState(() {
+                            _showOnlyFilterd.value = false;
+                          });
+                        } else {
+                          _showFilterDialog();
+                        }
+                      },
+                      icon: Icon(_showOnlyFilterd.value
+                          ? Icons.filter_list_alt
+                          : Icons.filter_list_off_outlined)),
+                  IconButton(
+                    icon: Icon(_showOnlyLiked.value
+                        ? Icons.favorite
+                        : Icons.favorite_border),
+                    onPressed: _toggleShowOnlyLiked,
+                  ),
+                ],
+              ),
+              body: RefreshIndicator(
+                onRefresh: _fetchWebpage,
+                child: _dateBoxesToShow.isEmpty
+                    ? Text('No content found')
+                    : ListView.builder(
+                        itemCount: _dateBoxesToShow.length,
+                        itemBuilder: (context, index) {
+                          var dateBox = _dateBoxesToShow[index];
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 8.0),
+                                child: Text(
+                                  dateBox.date,
+                                  style: TextStyle(
+                                      fontSize: 24,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                              Divider(),
+                              ...dateBox.events.map((event) {
+                                return ListTile(
+                                  tileColor: event.liked ? Colors.red : null,
+                                  leading: Text(event.time),
+                                  title: Text(event.title),
+                                  subtitle: Text(
+                                      '${event.categories.join(', ')} - ${event.venue}'),
+                                  onLongPress: () => _toggleLike(event),
+                                  onTap: () =>
+                                      _showEventDetails(context, event),
+                                );
+                              })
+                            ],
+                          );
+                        },
+                      ),
+              ),
+            );
+          }
+        });
   }
 
   bool checkEvent(Event event) {
