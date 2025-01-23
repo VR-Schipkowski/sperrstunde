@@ -136,7 +136,18 @@ class _HomePageState extends State<HomePage> {
         title: Text('Sperrstunde'),
         actions: [
           IconButton(
-              onPressed: _showFilterDialog, icon: Icon(Icons.filter_list)),
+              onPressed: () {
+                if (_showOnlyFilterd.value) {
+                  setState(() {
+                    _showOnlyFilterd.value = false;
+                  });
+                } else {
+                  _showFilterDialog();
+                }
+              },
+              icon: Icon(_showOnlyFilterd.value
+                  ? Icons.filter_list_alt
+                  : Icons.filter_list_off_outlined)),
           IconButton(
             icon: Icon(
                 _showOnlyLiked.value ? Icons.favorite : Icons.favorite_border),
@@ -230,8 +241,12 @@ class _HomePageState extends State<HomePage> {
             allDateBoxes: _dateBoxes,
             onApply: (filter) {
               setState(() {
-                _filter = filter;
-                _showOnlyFilterd.value = true;
+                if (filter.categories.isEmpty && filter.venues.isEmpty) {
+                  _showOnlyFilterd.value = false;
+                } else {
+                  _filter = filter;
+                  _showOnlyFilterd.value = true;
+                }
               });
             },
             onCancel: () {
