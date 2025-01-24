@@ -10,7 +10,7 @@ class Event {
   final String time;
   final List<String> categories;
   String? longDescription;
-  final String? description;
+  final String description;
   String? imageUrl;
   final List<String>? eventUrlsTitles;
   final List<String>? eventUrls;

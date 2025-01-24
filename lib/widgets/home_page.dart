@@ -8,6 +8,7 @@ import 'package:sperrstunde/services/fech_service.dart';
 import 'package:sperrstunde/widgets/filter_dialog.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sperrstunde/widgets/loading_screen.dart';
+import 'package:sperrstunde/widgets/single_event.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -230,33 +231,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-            title: Text(event.title),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Date: ${event.date}'),
-                Text('Time: ${event.time}'),
-                Text('Venue: ${event.venue}'),
-                Text('Categories: ${event.categories.join(', ')}'),
-                Text('Description: ${event.description}'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Close'),
-              ),
-              TextButton(
-                onPressed: () {
-                  _toggleLike(event);
-                  print('Liked ${event.title}');
-                  Navigator.of(context).pop();
-                },
-                child: Text('Like'),
-              ),
-            ]);
+        return SingleEvent(event: event, toggleLike: _toggleLike);
       },
     );
   }
