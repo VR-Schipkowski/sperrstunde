@@ -27,8 +27,13 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: colorScheme,
         textTheme: TextTheme(
+          headlineSmall: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: colorScheme.onSurface),
+          bodySmall: TextStyle(fontSize: 12, color: colorScheme.onSurface),
           headlineMedium: TextStyle(
-              fontSize: 24,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: colorScheme.onSurface),
           bodyMedium: TextStyle(fontSize: 16, color: colorScheme.onSurface),
