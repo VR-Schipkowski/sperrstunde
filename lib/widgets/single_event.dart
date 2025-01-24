@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/services/fech_service.dart';
+import 'package:sperrstunde/widgets/category_chip.dart';
 
 class SingleEvent extends StatefulWidget {
   final Event event;
@@ -33,7 +34,6 @@ class _SingleEventState extends State<SingleEvent> {
         });
       }
     } catch (e) {
-      print('Error loading event details: $e');
       if (mounted) {
         setState(() {
           _isLoading = false;
@@ -44,6 +44,7 @@ class _SingleEventState extends State<SingleEvent> {
 
   @override
   Widget build(BuildContext context) {
+    print('price:${(_event.price)}');
     return AlertDialog(
       contentPadding: EdgeInsets.zero,
       content: _isLoading
@@ -68,12 +69,12 @@ class _SingleEventState extends State<SingleEvent> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          _event.categories.join(', '),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                        Wrap(
+                          spacing: 8.0,
+                          runSpacing: 4.0,
+                          children: _event.categories.map((category) {
+                            return CategoryChip(category: category);
+                          }).toList(),
                         ),
                         Text(
                           _event.title,
@@ -100,7 +101,7 @@ class _SingleEventState extends State<SingleEvent> {
                         ),
                         SizedBox(height: 8),
                         Text(_event.longDescription ?? ''),
-                        if (_event.price != null)
+                        if (_event.price != null && _event.price != '')
                           Text(
                             'Price: ${_event.price}',
                             style: TextStyle(

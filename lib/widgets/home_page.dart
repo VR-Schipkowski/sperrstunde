@@ -5,8 +5,11 @@ import 'package:sperrstunde/models/date_box.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/models/helper/filter.dart';
 import 'package:sperrstunde/services/fech_service.dart';
+import 'package:sperrstunde/widgets/category_chip.dart';
+import 'package:sperrstunde/widgets/event_list_element.dart';
 import 'package:sperrstunde/widgets/filter_dialog.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sperrstunde/widgets/helper/colormap.dart';
 import 'package:sperrstunde/widgets/loading_screen.dart';
 import 'package:sperrstunde/widgets/single_event.dart';
 
@@ -140,6 +143,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
     return FutureBuilder(
         future: _fetchFuture,
         builder: (context, snapshot) {
@@ -155,8 +159,9 @@ class _HomePageState extends State<HomePage> {
             return Scaffold(
               appBar: AppBar(
                 title: SvgPicture.asset(
-                    'lib/assets/Sperrstunde_Logo-Schriftzug_RGB.svg',
-                    color: Color.fromARGB(255, 255, 95, 31)),
+                  'lib/assets/Sperrstunde_Logo-Schriftzug_RGB.svg',
+                  color: colorScheme.primary,
+                ),
                 actions: [
                   IconButton(
                       onPressed: () {
@@ -170,11 +175,13 @@ class _HomePageState extends State<HomePage> {
                       },
                       icon: Icon(_showOnlyFilterd.value
                           ? Icons.filter_list_alt
-                          : Icons.filter_list_off_outlined)),
+                          : Icons.filter_list_off_outlined),
+                      color: colorScheme.secondary),
                   IconButton(
                     icon: Icon(_showOnlyLiked.value
                         ? Icons.favorite
                         : Icons.favorite_border),
+                    color: colorScheme.error,
                     onPressed: _toggleShowOnlyLiked,
                   ),
                 ],
@@ -200,18 +207,12 @@ class _HomePageState extends State<HomePage> {
                                       fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              Divider(),
+                              Divider(color: colorScheme.secondary),
                               ...dateBox.events.map((event) {
-                                return ListTile(
-                                  tileColor: event.liked ? Colors.red : null,
-                                  leading: Text(event.time),
-                                  title: Text(event.title),
-                                  subtitle: Text(
-                                      '${event.categories.join(', ')} - ${event.venue}'),
-                                  onLongPress: () => _toggleLike(event),
-                                  onTap: () =>
-                                      _showEventDetails(context, event),
-                                );
+                                return EventListElement(
+                                    event: event,
+                                    toggleLike: _toggleLike,
+                                    showEventDetails: _showEventDetails);
                               })
                             ],
                           );
