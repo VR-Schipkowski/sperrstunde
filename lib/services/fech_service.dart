@@ -5,7 +5,7 @@ import 'package:sperrstunde/models/event.dart';
 
 class FetchService {
   Future<List<DateBox>> fetchWebpage() async {
-    final response = await http.get(Uri.parse('https://tunde.org/'));
+    final response = await http.get(Uri.parse('https://sperrstunde.org/'));
     if (response.statusCode == 200) {
       var document = html_parser.parse(response.body);
       var eventDateBoxesElements =

@@ -20,7 +20,7 @@ class EventListElement extends StatelessWidget {
     return ListTile(
       tileColor: event.liked ? colorScheme.error : null,
       leading:
-          Text(event.time, style: Theme.of(context).textTheme.headlineMedium),
+          Text(event.time, style: Theme.of(context).textTheme.headlineSmall),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
