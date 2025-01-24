@@ -197,22 +197,36 @@ class _HomePageState extends State<HomePage> {
                           return Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Padding(
+                              Container(
+                                width: double.infinity,
+                                color: colorScheme.primary,
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Text(
-                                  dateBox.date,
-                                  style: TextStyle(
+                                child: Align(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    dateBox.date,
+                                    style: TextStyle(
                                       fontSize: 24,
-                                      fontWeight: FontWeight.bold),
+                                      fontWeight: FontWeight.bold,
+                                      color: colorScheme.onPrimary,
+                                    ),
+                                  ),
                                 ),
                               ),
-                              Divider(color: colorScheme.secondary),
                               ...dateBox.events.map((event) {
-                                return EventListElement(
-                                    event: event,
-                                    toggleLike: _toggleLike,
-                                    showEventDetails: _showEventDetails);
+                                return Column(
+                                  children: [
+                                    Divider(
+                                      color: colorScheme.secondary,
+                                      thickness: 2,
+                                    ),
+                                    EventListElement(
+                                        event: event,
+                                        toggleLike: _toggleLike,
+                                        showEventDetails: _showEventDetails),
+                                  ],
+                                );
                               })
                             ],
                           );

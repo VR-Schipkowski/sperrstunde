@@ -5,7 +5,7 @@ import 'package:sperrstunde/models/event.dart';
 
 class FetchService {
   Future<List<DateBox>> fetchWebpage() async {
-    final response = await http.get(Uri.parse('https://tunde.org/'));
+    final response = await http.get(Uri.parse('https://sperrstunde.org/'));
     if (response.statusCode == 200) {
       var document = html_parser.parse(response.body);
       var eventDateBoxesElements =
@@ -23,9 +23,7 @@ class FetchService {
         .get(Uri.parse('https://sperrstunde.org/${event.singleEventUrl}'));
     if (response.statusCode == 200) {
       var document = html_parser.parse(response.body);
-      print(document);
       var eventElement = document.getElementsByClassName('single-event').first;
-      print(eventElement);
 
       if (eventElement != null) {
         // Extract the image URL
@@ -41,7 +39,6 @@ class FetchService {
         if (descriptionElement != null) {
           event.longDescription = descriptionElement.text;
         }
-        print(event);
       }
     } else {
       throw Exception('Failed to load single event');
