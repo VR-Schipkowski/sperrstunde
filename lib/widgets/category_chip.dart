@@ -33,9 +33,11 @@ class CategoryChip extends StatelessWidget {
   Widget build(BuildContext context) {
     final backgroundColor = categoryColors[category] ?? Colors.grey;
     final textColor = _getTextColor(backgroundColor);
+    final textStyle =
+        Theme.of(context).textTheme.bodySmall?.copyWith(color: textColor);
 
     return Chip(
-      label: Text(category, style: TextStyle(color: textColor)),
+      label: Text(category, style: textStyle),
       backgroundColor: backgroundColor,
       side: BorderSide.none,
     );

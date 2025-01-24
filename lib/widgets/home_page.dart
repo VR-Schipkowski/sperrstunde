@@ -176,11 +176,12 @@ class _HomePageState extends State<HomePage> {
                       icon: Icon(_showOnlyFilterd.value
                           ? Icons.filter_list_alt
                           : Icons.filter_list_off_outlined),
-                      color: colorScheme.error),
+                      color: colorScheme.secondary),
                   IconButton(
                     icon: Icon(_showOnlyLiked.value
                         ? Icons.favorite
                         : Icons.favorite_border),
+                    color: colorScheme.error,
                     onPressed: _toggleShowOnlyLiked,
                   ),
                 ],
@@ -206,7 +207,7 @@ class _HomePageState extends State<HomePage> {
                                       fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              Divider(),
+                              Divider(color: colorScheme.secondary),
                               ...dateBox.events.map((event) {
                                 return EventListElement(
                                     event: event,

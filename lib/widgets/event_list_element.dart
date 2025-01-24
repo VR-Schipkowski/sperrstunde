@@ -19,7 +19,8 @@ class EventListElement extends StatelessWidget {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return ListTile(
       tileColor: event.liked ? colorScheme.error : null,
-      leading: Text(event.time),
+      leading:
+          Text(event.time, style: Theme.of(context).textTheme.headlineMedium),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -31,13 +32,12 @@ class EventListElement extends StatelessWidget {
             }).toList(),
           ),
           SizedBox(height: 4),
-          Text(
-            event.title,
-            style: TextStyle(
-              fontSize: 20, // Make the title bigger
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text(event.title, style: Theme.of(context).textTheme.headlineLarge),
+          SizedBox(height: 4),
+          Text(event.description,
+              style: Theme.of(context).textTheme.bodyMedium),
+          SizedBox(height: 4),
+          Text(event.venue, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
       onLongPress: () => _toggleLike(event),
