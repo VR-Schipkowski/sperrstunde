@@ -8,6 +8,7 @@ import 'package:sperrstunde/services/fech_service.dart';
 import 'package:sperrstunde/widgets/filter_dialog.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sperrstunde/widgets/loading_screen.dart';
+import 'package:sperrstunde/widgets/single_event.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -44,9 +45,7 @@ class _HomePageState extends State<HomePage> {
     try {
       var fetchService = FetchService();
       dateBoxes = await fetchService.fetchWebpage();
-      print('Fetched data from web service');
     } catch (e) {
-      print('Error fetching data from web service: $e');
       FlutterError.reportError(FlutterErrorDetails(exception: e));
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error fetching data: $e')),
@@ -54,7 +53,6 @@ class _HomePageState extends State<HomePage> {
     }
     if (dateBoxes.isEmpty) {
       dateBoxes = await loadDateBoxes();
-      print('Loaded data from persistent storage');
     }
     if (mounted) {
       setState(() {
@@ -64,7 +62,6 @@ class _HomePageState extends State<HomePage> {
     await _saveDateBoxes();
     await _loadLikes();
     _calculateDateBoxesToShow();
-    print('Webpage fetched and data loaded');
   }
 
   Future<void> _saveDateBoxes() async {
@@ -234,33 +231,7 @@ class _HomePageState extends State<HomePage> {
     showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-            title: Text(event.title),
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text('Date: ${event.date}'),
-                Text('Time: ${event.time}'),
-                Text('Venue: ${event.venue}'),
-                Text('Categories: ${event.categories.join(', ')}'),
-                Text('Description: ${event.description}'),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(),
-                child: Text('Close'),
-              ),
-              TextButton(
-                onPressed: () {
-                  _toggleLike(event);
-                  print('Liked ${event.title}');
-                  Navigator.of(context).pop();
-                },
-                child: Text('Like'),
-              ),
-            ]);
+        return SingleEvent(event: event, toggleLike: _toggleLike);
       },
     );
   }

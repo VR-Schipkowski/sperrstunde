@@ -11,7 +11,7 @@ class DateBox {
     var date = element.querySelector('.event-date')?.text.trim() ?? '';
     var eventElements = element.getElementsByClassName('event event-published');
     var events = eventElements
-        .map((eventElement) => Event.fromElement(eventElement))
+        .map((eventElement) => Event.fromElement(date, eventElement))
         .toList();
 
     return DateBox(
