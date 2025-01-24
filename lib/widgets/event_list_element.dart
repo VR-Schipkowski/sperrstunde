@@ -20,23 +20,19 @@ class EventListElement extends StatelessWidget {
     return ListTile(
       tileColor: event.liked ? colorScheme.error : null,
       leading:
-          Text(event.time, style: Theme.of(context).textTheme.headlineSmall),
+          Text(event.time, style: Theme.of(context).textTheme.headlineMedium),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Wrap(
-            spacing: 8.0,
-            runSpacing: 4.0,
-            children: event.categories.map((category) {
-              return CategoryChip(category: category);
-            }).toList(),
+          ...event.categories.map((category) {
+            return CategoryChip(category: category);
+          }).toList(),
+          Text(
+            event.title,
+            style: Theme.of(context).textTheme.headlineMedium,
           ),
-          SizedBox(height: 4),
-          Text(event.title, style: Theme.of(context).textTheme.headlineLarge),
-          SizedBox(height: 4),
           Text(event.description,
               style: Theme.of(context).textTheme.bodyMedium),
-          SizedBox(height: 4),
           Text(event.venue, style: Theme.of(context).textTheme.bodySmall),
         ],
       ),
