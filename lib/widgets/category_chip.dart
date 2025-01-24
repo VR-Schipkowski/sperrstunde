@@ -37,6 +37,7 @@ class CategoryChip extends StatelessWidget {
     return Chip(
       label: Text(category, style: TextStyle(color: textColor)),
       backgroundColor: backgroundColor,
+      side: BorderSide.none,
     );
   }
 }
