@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/services/fech_service.dart';
@@ -53,13 +54,27 @@ class _SingleEventState extends State<SingleEvent> {
                 children: [
                   if (_event.imageUrl != null)
                     Center(
-                      child: Image.network(_event.imageUrl!),
+                      child: CachedNetworkImage(
+                        imageUrl: _event.imageUrl!,
+                        width: MediaQuery.of(context).size.width *
+                            0.8, // Set image width relative to screen width
+                        placeholder: (context, url) =>
+                            CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      ),
                     ),
                   Padding(
                     padding: const EdgeInsets.all(8.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Text(
+                          _event.categories.join(', '),
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                         Text(
                           _event.title,
                           style: TextStyle(
@@ -68,13 +83,6 @@ class _SingleEventState extends State<SingleEvent> {
                           ),
                         ),
                         SizedBox(height: 8),
-                        Text(
-                          _event.categories.join(', '),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
                         Text(
                           _event.venue,
                           style: TextStyle(
