@@ -62,8 +62,6 @@ class Event {
     var endTime =
         timeSplit.length > 1 ? _parseEndTime(date, timeSplit[1].trim()) : null;
 
-    print("startTime:$startTime");
-    print("endtime:$endTime");
     return Event(
       date: date,
       title: title,
@@ -138,8 +136,6 @@ class Event {
     // Check if the endTime contains a date
     if (endTime.contains('.')) {
       // Extract day, month, and year from the endTime string
-      print("enter reding endtime");
-      print(endTime);
       var dateTimeParts = endTime.split(' ');
       var dateParts = dateTimeParts[0].split('.');
       var day = int.parse(dateParts[0]);
