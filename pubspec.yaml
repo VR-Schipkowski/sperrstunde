@@ -18,7 +18,7 @@ dependencies:
   http: ^1.3.0
   html: ^0.15.0
   shared_preferences: ^2.0.8
-  flutter_svg: ^1.0.3
+  flutter_svg: ^2.0.17
 dev_dependencies:
   flutter_test:
     sdk: flutter
