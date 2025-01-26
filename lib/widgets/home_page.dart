@@ -5,11 +5,9 @@ import 'package:sperrstunde/models/date_box.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/models/helper/filter.dart';
 import 'package:sperrstunde/services/fech_service.dart';
-import 'package:sperrstunde/widgets/category_chip.dart';
 import 'package:sperrstunde/widgets/event_list_element.dart';
 import 'package:sperrstunde/widgets/filter_dialog.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:sperrstunde/widgets/helper/colormap.dart';
 import 'package:sperrstunde/widgets/loading_screen.dart';
 import 'package:sperrstunde/widgets/single_event.dart';
 
