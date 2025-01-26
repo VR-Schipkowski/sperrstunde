@@ -42,13 +42,6 @@ class _SingleEventState extends State<SingleEvent> {
     }
   }
 
-  void _toggleLike() {
-    setState(() {
-      _event.liked = !_event.liked;
-    });
-    widget.toggleLike(_event);
-  }
-
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
@@ -139,7 +132,8 @@ class _SingleEventState extends State<SingleEvent> {
             color: colorScheme.error,
           ),
           onPressed: () {
-            _toggleLike();
+            widget.toggleLike(_event);
+            setState(() {});
           },
         ),
       ],
