@@ -1,5 +1,8 @@
 import 'package:html/dom.dart' as dom;
 import 'dart:core';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'package:open_file/open_file.dart';
 
 class Event {
   final String date;
@@ -117,6 +120,28 @@ class Event {
         endTime:
             json['endTime'] != null ? DateTime.parse(json['endTime']) : null,
       );
+
+  Future<void> createAndOpenIcalFile() async {
+    final icalContent = '''
+BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:$title
+DESCRIPTION:$description
+LOCATION:$venue
+DTSTART:${startTime.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}
+DTEND:${endTime?.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}
+END:VEVENT
+END:VCALENDAR
+''';
+
+    final directory = await getApplicationDocumentsDirectory();
+    final filePath = '${directory.path}/$title.ics';
+    final file = File(filePath);
+    await file.writeAsString(icalContent);
+
+    OpenFile.open(filePath);
+  }
 
   static DateTime _parseTime(String date, String time) {
     // Combine the date and time strings and parse them into a DateTime object
