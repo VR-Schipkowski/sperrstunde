@@ -10,7 +10,6 @@ class DateBox {
   factory DateBox.fromElement(dom.Element element) {
     var date = element.querySelector('.event-date')?.text.trim() ?? '';
     date = _removeParagraphs(date);
-    print(date);
     var eventElements = element.getElementsByClassName('event event-published');
     var events = eventElements
         .map((eventElement) => Event.fromElement(date, eventElement))

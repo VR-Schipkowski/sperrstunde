@@ -8,7 +8,7 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final ColorScheme colorScheme = ColorScheme(
+    final ColorScheme lightColorScheme = ColorScheme(
       primary: Color(0xFFFF5F1F), // Primary color
       primaryFixed: Color(0xFFD94E1A), // Darker shade of primary color
       secondary: Color(0xFF38A3C4), // Secondary color
@@ -22,24 +22,58 @@ class MyApp extends StatelessWidget {
       brightness: Brightness.light, // Brightness (light or dark)
     );
 
+    final ColorScheme darkColorScheme = ColorScheme(
+      primary: Color(0xFFFF5F1F), // Primary color
+      primaryContainer: Color(0xFFD94E1A), // Darker shade of primary color
+      secondary: Color(0xFF38A3C4), // Secondary color
+      secondaryContainer: Color(0xFF2E8BA8), // Darker shade of secondary color
+      surface: Color(0xFF121212), // Surface color
+      error: Color(0xFFCF6679), // Error color
+      onPrimary: Colors.black, // Text color on primary color
+      onSecondary: Colors.black, // Text color on secondary color
+      onSurface: Colors.white, // Text color on surface color
+      onError: Colors.black, // Text color on error color
+      brightness: Brightness.dark, // Brightness (light or dark)
+    );
+
+    final TextTheme baseTextTheme = TextTheme(
+      headlineSmall: TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+      bodySmall: TextStyle(fontSize: 12),
+      headlineMedium: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      bodyMedium: TextStyle(fontSize: 16),
+    );
+    final themeProvider = ThemeProvider(); // Define themeProvider
+
     return MaterialApp(
       title: 'Sperrstunde',
+      themeMode: themeProvider.themeMode,
       theme: ThemeData(
-        colorScheme: colorScheme,
-        textTheme: TextTheme(
-          headlineSmall: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface),
-          bodySmall: TextStyle(fontSize: 12, color: colorScheme.onSurface),
-          headlineMedium: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.onSurface),
-          bodyMedium: TextStyle(fontSize: 16, color: colorScheme.onSurface),
+        colorScheme: lightColorScheme,
+        textTheme: baseTextTheme.apply(
+          bodyColor: lightColorScheme.onSurface,
+          displayColor: lightColorScheme.onSurface,
+        ),
+      ),
+      darkTheme: ThemeData(
+        colorScheme: darkColorScheme,
+        textTheme: baseTextTheme.apply(
+          bodyColor: darkColorScheme.onSurface,
+          displayColor: darkColorScheme.onSurface,
         ),
       ),
       home: HomePage(),
     );
+  }
+}
+
+class ThemeProvider extends ChangeNotifier {
+  ThemeMode _themeMode = ThemeMode.light;
+
+  ThemeMode get themeMode => _themeMode;
+
+  void toggleTheme() {
+    _themeMode =
+        _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
   }
 }

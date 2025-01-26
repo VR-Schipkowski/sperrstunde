@@ -18,15 +18,29 @@ class EventListElement extends StatelessWidget {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
     return ListTile(
-      tileColor: event.liked ? colorScheme.error : null,
       leading:
           Text(event.time, style: Theme.of(context).textTheme.headlineMedium),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          ...event.categories.map((category) {
-            return CategoryChip(category: category);
-          }).toList(),
+          Row(
+            children: [
+              if (event.liked)
+                Icon(
+                  Icons.favorite,
+                  color: colorScheme.error,
+                ),
+              Expanded(
+                child: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: event.categories.map((category) {
+                    return CategoryChip(category: category);
+                  }).toList(),
+                ),
+              ),
+            ],
+          ),
           Text(
             event.title,
             style: Theme.of(context).textTheme.headlineMedium,
