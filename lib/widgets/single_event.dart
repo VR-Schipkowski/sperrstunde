@@ -42,9 +42,16 @@ class _SingleEventState extends State<SingleEvent> {
     }
   }
 
+  void _toggleLike() {
+    setState(() {
+      _event.liked = !_event.liked;
+    });
+    widget.toggleLike(_event);
+  }
+
   @override
   Widget build(BuildContext context) {
-    print('price:${(_event.price)}');
+    ColorScheme colorScheme = Theme.of(context).colorScheme;
     return AlertDialog(
       contentPadding: EdgeInsets.zero,
       content: _isLoading
@@ -116,16 +123,24 @@ class _SingleEventState extends State<SingleEvent> {
               ),
             ),
       actions: [
-        TextButton(
+        IconButton(
+          icon: Icon(Icons.close),
           onPressed: () => Navigator.of(context).pop(),
-          child: Text('Close'),
         ),
-        TextButton(
+        IconButton(
+          icon: Icon(Icons.download),
           onPressed: () {
-            widget.toggleLike(_event);
-            Navigator.of(context).pop();
+            _event.createAndOpenIcalFile();
           },
-          child: Text('Like'),
+        ),
+        IconButton(
+          icon: Icon(
+            _event.liked ? Icons.favorite : Icons.favorite_border,
+            color: colorScheme.error,
+          ),
+          onPressed: () {
+            _toggleLike();
+          },
         ),
       ],
     );
