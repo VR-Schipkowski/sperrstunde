@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:sperrstunde/models/event.dart';
+import 'package:sperrstunde/services/date_funktions.dart';
 import 'package:sperrstunde/widgets/category_chip.dart';
 
 class EventListElement extends StatelessWidget {
@@ -17,9 +18,17 @@ class EventListElement extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    String formattedTime =
+        DateHelper.formatEventTime(event.startTime, event.endTime);
+
     return ListTile(
-      leading:
-          Text(event.time, style: Theme.of(context).textTheme.headlineMedium),
+      leading: SizedBox(
+        width: 80, // Set a fixed width for the leading part
+        child: Text(
+          formattedTime,
+          style: Theme.of(context).textTheme.headlineMedium,
+        ),
+      ),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
