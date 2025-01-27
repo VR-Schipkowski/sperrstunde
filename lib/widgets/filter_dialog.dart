@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:multi_select_flutter/multi_select_flutter.dart';
-import 'package:sperrstunde/models/date_box.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/models/helper/filter.dart';
 
 class FilterDialogWidget extends StatefulWidget {
-  final List<DateBox> allDateBoxes;
+  final List<Event> allEvents;
   final Function(Filter) onApply;
   final Function() onCancel;
   final Filter filter;
 
   FilterDialogWidget({
-    required this.allDateBoxes,
+    required this.allEvents,
     required this.onApply,
     required this.onCancel,
     required this.filter,
@@ -37,11 +36,9 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
     // Extract unique categories and venues from the events Set<String> allCategories = {};
     Set<String> allCategories = {};
     Set<String> allVenues = {};
-    for (var dateBox in widget.allDateBoxes) {
-      for (var event in dateBox.events) {
-        allCategories.addAll(event.categories);
-        allVenues.add(event.venue);
-      }
+    for (var event in widget.allEvents) {
+      allCategories.addAll(event.categories);
+      allVenues.add(event.venue);
     }
 
     return AlertDialog(
@@ -111,17 +108,11 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
         ),
         TextButton(
           onPressed: () {
-            List<DateBox> filterdDateBoxes = [];
-            for (var dateBox in widget.allDateBoxes) {
-              List<Event> filterdEvents = [];
-              filterdEvents.addAll(
-                  dateBox.events.where((e) => widget.filter.checkEvent(e)));
-              if (filterdEvents.isNotEmpty) {
-                filterdDateBoxes
-                    .add(DateBox(date: dateBox.date, events: filterdEvents));
-              }
-            }
-            if (filterdDateBoxes.isEmpty) {
+            List<Event> filterdEvents = [];
+            filterdEvents.addAll(
+                widget.allEvents.where((e) => widget.filter.checkEvent(e)));
+
+            if (filterdEvents.isEmpty) {
               // Show warning if no events match the selected filters
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
