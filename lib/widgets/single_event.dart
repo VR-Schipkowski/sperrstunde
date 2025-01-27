@@ -44,6 +44,7 @@ class _SingleEventState extends State<SingleEvent> {
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
 
+    var textTheme = Theme.of(context).textTheme;
     return AlertDialog(
       contentPadding: EdgeInsets.zero,
       content: SingleChildScrollView(
@@ -75,46 +76,37 @@ class _SingleEventState extends State<SingleEvent> {
                       return CategoryChip(category: category);
                     }).toList(),
                   ),
-                  Text(
-                    _event.title,
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                  SizedBox(height: 8),
+                  Container(
+                    color: colorScheme.shadow,
+                    padding: EdgeInsets.symmetric(
+                        horizontal: 2.0, vertical: 2.0), // Add some padding
+                    child: Text(
+                      _event.title,
+                      style: textTheme.headlineMedium,
                     ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     "${DateHelper.getFormattedDate(_event.startTime)} - ${DateHelper.getFormattedTime(_event.startTime)}-${DateHelper.getFormattedTime(_event.endTime)}",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.bodyMedium,
                   ),
                   SizedBox(height: 8),
                   Text(
                     _event.venue,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.bodySmall,
                   ),
                   SizedBox(height: 8),
                   Text(
                     _event.description,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: textTheme.bodyMedium,
                   ),
                   SizedBox(height: 8),
                   Text(_event.longDescription ?? ''),
                   if (_event.price != null && _event.price != '')
                     Text(
                       'Price: ${_event.price}',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                      ),
+                      style: textTheme.headlineMedium,
                     ),
                 ],
               ),
