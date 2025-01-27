@@ -1,8 +1,12 @@
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:html/dom.dart' as dom;
 import 'dart:core';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:open_file/open_file.dart';
+import 'package:cross_file/cross_file.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:sperrstunde/services/date_funktions.dart';
 
 class Event {
   final String date;
@@ -12,7 +16,7 @@ class Event {
   final String venueLink;
   final String time;
   final List<String> categories;
-  String? longDescription;
+  String longDescription;
   final String description;
   String? imageUrl;
   final List<String>? eventUrlsTitles;
@@ -32,7 +36,7 @@ class Event {
     required this.categories,
     required this.description,
     this.imageUrl,
-    this.longDescription,
+    this.longDescription = '',
     this.eventUrlsTitles,
     this.eventUrls,
     this.price,
@@ -66,20 +70,20 @@ class Event {
         timeSplit.length > 1 ? _parseEndTime(date, timeSplit[1].trim()) : null;
 
     return Event(
-      date: date,
-      title: title,
-      singleEventUrl: singleEventUrl,
-      venue: venue,
-      venueLink: venueLink,
-      time: time,
-      categories: categories,
-      description: description,
-      eventUrls: eventUrls,
-      eventUrlsTitles: eventUrlsTitles,
-      price: price,
-      startTime: startTime,
-      endTime: endTime,
-    );
+        date: date,
+        title: title,
+        singleEventUrl: singleEventUrl,
+        venue: venue,
+        venueLink: venueLink,
+        time: time,
+        categories: categories,
+        description: description,
+        eventUrls: eventUrls,
+        eventUrlsTitles: eventUrlsTitles,
+        price: price,
+        startTime: startTime,
+        endTime: endTime,
+        longDescription: '');
   }
 
   Map<String, dynamic> toJson() => {
@@ -127,7 +131,7 @@ BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
 SUMMARY:$title
-DESCRIPTION:$description
+DESCRIPTION:$description \n $longDescription
 LOCATION:$venue
 DTSTART:${startTime.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}
 ${endTime != null ? 'DTEND:${endTime?.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}\n' : ''}
@@ -141,6 +145,32 @@ END:VCALENDAR
     await file.writeAsString(icalContent);
 
     OpenFile.open(filePath, type: 'text/calendar');
+  }
+
+  Future<void> shareEvent() async {
+    var endString = (endTime != null || endTime == '')
+        ? "End: ${DateHelper.getFormattedTime(endTime?.toLocal())}\n"
+        : '';
+    final eventDetails = '''
+Date: ${DateHelper.formatDate(startTime.toLocal())}
+
+${title.toUpperCase()}
+
+Venue: $venue
+Description: $description
+$longDescription
+
+Start: ${DateHelper.getFormattedTime(startTime.toLocal())}
+$endString
+Price: $price
+sperrstunde.org$singleEventUrl
+''';
+    if (imageUrl != null || imageUrl != '') {
+      final file = await DefaultCacheManager().getSingleFile(imageUrl!);
+      await Share.shareXFiles([XFile(file.path)], text: eventDetails);
+    } else {
+      await Share.share(eventDetails);
+    }
   }
 
   static DateTime _parseTime(String date, String time) {

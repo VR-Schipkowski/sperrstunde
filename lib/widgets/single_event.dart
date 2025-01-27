@@ -17,6 +17,7 @@ class SingleEvent extends StatefulWidget {
 
 class _SingleEventState extends State<SingleEvent> {
   late Event _event;
+  final double iconSize = 32.0;
 
   @override
   void initState() {
@@ -115,25 +116,41 @@ class _SingleEventState extends State<SingleEvent> {
         ),
       ),
       actions: [
-        IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
-        IconButton(
-          icon: Icon(Icons.download),
-          onPressed: () {
-            _event.createAndOpenIcalFile();
-          },
-        ),
-        IconButton(
-          icon: Icon(
-            _event.liked ? Icons.favorite : Icons.favorite_border,
-            color: colorScheme.error,
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: IconButton(
+                  icon: Icon(Icons.download),
+                  onPressed: () {
+                    _event.createAndOpenIcalFile();
+                  },
+                  iconSize: iconSize,
+                ),
+              ),
+              Flexible(
+                child: IconButton(
+                  icon: Icon(
+                    _event.liked ? Icons.favorite : Icons.favorite_border,
+                    color: colorScheme.error,
+                  ),
+                  onPressed: () {
+                    widget.toggleLike(_event);
+                    setState(() {});
+                  },
+                  iconSize: iconSize,
+                ),
+              ),
+              Flexible(
+                child: IconButton(
+                  icon: Icon(Icons.share),
+                  onPressed: _event.shareEvent,
+                  iconSize: iconSize,
+                ),
+              ),
+            ],
           ),
-          onPressed: () {
-            widget.toggleLike(_event);
-            setState(() {});
-          },
         ),
       ],
     );
