@@ -32,4 +32,13 @@ class DateHelper {
     final DateFormat formatter = DateFormat('HH:mm', 'de_DE');
     return formatter.format(date);
   }
+
+  static String formatEventTime(DateTime startTime, DateTime? endTime) {
+    final timeFormat = DateFormat('HH:mm');
+    String formattedStartTime = timeFormat.format(startTime);
+    String formattedEndTime = endTime != null ? timeFormat.format(endTime) : '';
+    return endTime != null
+        ? '$formattedStartTime - $formattedEndTime'
+        : formattedStartTime;
+  }
 }
