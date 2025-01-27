@@ -130,7 +130,7 @@ SUMMARY:$title
 DESCRIPTION:$description
 LOCATION:$venue
 DTSTART:${startTime.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}
-DTEND:${endTime?.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}
+${endTime != null ? 'DTEND:${endTime?.toUtc().toIso8601String().replaceAll('-', '').replaceAll(':', '').split('.')[0]}\n' : ''}
 END:VEVENT
 END:VCALENDAR
 ''';
@@ -140,7 +140,7 @@ END:VCALENDAR
     final file = File(filePath);
     await file.writeAsString(icalContent);
 
-    OpenFile.open(filePath);
+    OpenFile.open(filePath, type: 'text/calendar');
   }
 
   static DateTime _parseTime(String date, String time) {
