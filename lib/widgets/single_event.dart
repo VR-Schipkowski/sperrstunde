@@ -25,13 +25,6 @@ class _SingleEventState extends State<SingleEvent> {
     _event = widget.event;
   }
 
-  Future<void> _shareEvent() async {
-    final imageProvider = CachedNetworkImageProvider(_event.imageUrl!);
-    final key = await imageProvider.obtainKey(const ImageConfiguration());
-    final file = await imageProvider.cacheManager!.getSingleFile(key.url);
-    await _event.shareEvent(file);
-  }
-
   void _showFullScreenImage(String imageUrl) {
     showDialog(
       context: context,
@@ -123,33 +116,42 @@ class _SingleEventState extends State<SingleEvent> {
         ),
       ),
       actions: [
-        IconButton(
-          icon: Icon(Icons.close),
-          onPressed: () => Navigator.of(context).pop(),
-          iconSize: iconSize,
-        ),
-        IconButton(
-          icon: Icon(Icons.download),
-          onPressed: () {
-            _event.createAndOpenIcalFile();
-          },
-          iconSize: iconSize,
-        ),
-        IconButton(
-          icon: Icon(
-            _event.liked ? Icons.favorite : Icons.favorite_border,
-            color: colorScheme.error,
+        Center(
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Flexible(
+                child: IconButton(
+                  icon: Icon(Icons.download),
+                  onPressed: () {
+                    _event.createAndOpenIcalFile();
+                  },
+                  iconSize: iconSize,
+                ),
+              ),
+              Flexible(
+                child: IconButton(
+                  icon: Icon(
+                    _event.liked ? Icons.favorite : Icons.favorite_border,
+                    color: colorScheme.error,
+                  ),
+                  onPressed: () {
+                    widget.toggleLike(_event);
+                    setState(() {});
+                  },
+                  iconSize: iconSize,
+                ),
+              ),
+              Flexible(
+                child: IconButton(
+                  icon: Icon(Icons.share),
+                  onPressed: _event.shareEvent,
+                  iconSize: iconSize,
+                ),
+              ),
+            ],
           ),
-          onPressed: () {
-            widget.toggleLike(_event);
-            setState(() {});
-          },
-          iconSize: iconSize,
         ),
-        IconButton(
-            icon: Icon(Icons.share),
-            onPressed: () => _shareEvent(),
-            iconSize: iconSize),
       ],
     );
   }
