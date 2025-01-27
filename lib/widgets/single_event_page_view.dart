@@ -5,9 +5,11 @@ import 'package:sperrstunde/widgets/single_event.dart';
 class SingleEventPageView extends StatefulWidget {
   final List<Event> events;
   final Function(Event) toggleLike;
+  final int initialIndex;
 
   SingleEventPageView({
     required this.events,
+    required this.initialIndex,
     required this.toggleLike,
   });
 
@@ -21,6 +23,7 @@ class _SingleEventPageViewState extends State<SingleEventPageView> {
   @override
   void initState() {
     super.initState();
+    _pageController = PageController(initialPage: widget.initialIndex);
     _pageController.addListener(_preloadImages);
   }
 

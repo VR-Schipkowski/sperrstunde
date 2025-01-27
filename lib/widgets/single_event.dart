@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:photo_view/photo_view.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/services/date_funktions.dart';
 import 'package:sperrstunde/widgets/category_chip.dart';
@@ -23,9 +24,28 @@ class _SingleEventState extends State<SingleEvent> {
     _event = widget.event;
   }
 
+  void _showFullScreenImage(String imageUrl) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.black,
+        child: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: PhotoView(
+            imageProvider: CachedNetworkImageProvider(imageUrl),
+            backgroundDecoration: BoxDecoration(color: Colors.black),
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
+    double dialogWidth =
+        MediaQuery.of(context).size.width * 0.9; // 90% of screen width
+
     return AlertDialog(
       contentPadding: EdgeInsets.zero,
       content: SingleChildScrollView(
@@ -33,13 +53,16 @@ class _SingleEventState extends State<SingleEvent> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (_event.imageUrl != null)
-              Center(
-                child: CachedNetworkImage(
-                  imageUrl: _event.imageUrl!,
-                  width: MediaQuery.of(context).size.width *
-                      0.8, // Set image width relative to screen width
-                  placeholder: (context, url) => CircularProgressIndicator(),
-                  errorWidget: (context, url, error) => Icon(Icons.error),
+              GestureDetector(
+                onTap: () => _showFullScreenImage(_event.imageUrl!),
+                child: Center(
+                  child: CachedNetworkImage(
+                    imageUrl: _event.imageUrl!,
+                    width: MediaQuery.of(context).size.width *
+                        1, // Set image width relative to screen width
+                    placeholder: (context, url) => CircularProgressIndicator(),
+                    errorWidget: (context, url, error) => Icon(Icons.error),
+                  ),
                 ),
               ),
             Padding(

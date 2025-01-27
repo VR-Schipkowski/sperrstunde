@@ -7,7 +7,7 @@ class LoadingScreen extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: SvgPicture.asset(
-            'lib/assets/Sperrstunde_Logo-Schriftzug_RGB.svg',
+            'lib/assets/Sperrstunde_Logo-zweizeilig_RGB.png',
             height: 200,
             color: Color.fromARGB(255, 255, 95, 31)),
       ),
