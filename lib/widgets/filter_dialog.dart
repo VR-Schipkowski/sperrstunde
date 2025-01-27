@@ -40,6 +40,10 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
       allCategories.addAll(event.categories);
       allVenues.add(event.venue);
     }
+    allCategories.removeWhere((element) => element.isEmpty);
+    List<String> sortedCategories = allCategories.toList()..sort();
+    allVenues.removeWhere((element) => element.isEmpty);
+    List<String> sortedVenues = allVenues.toList()..sort();
 
     return AlertDialog(
       title: Text('Filter Events'),
@@ -47,7 +51,7 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
         mainAxisSize: MainAxisSize.min,
         children: [
           MultiSelectDialogField(
-            items: allCategories
+            items: sortedCategories
                 .map((category) => MultiSelectItem(category, category))
                 .toList(),
             title: Text('Categories'),
@@ -80,7 +84,7 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
             decoration: InputDecoration(labelText: 'Venue'),
             value: tempVenue.isNotEmpty ? tempVenue : null,
             isExpanded: true,
-            items: allVenues.map((venue) {
+            items: sortedVenues.map((venue) {
               return DropdownMenuItem<String>(
                 value: venue,
                 child: Text(

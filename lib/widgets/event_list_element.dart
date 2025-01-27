@@ -43,16 +43,14 @@ class EventListElement extends StatelessWidget {
                 ),
               Expanded(
                 child: Wrap(
-                  spacing: 8.0,
-                  runSpacing: 4.0,
-                  children: event.categories.map((category) {
-                    return CategoryChip(category: category);
-                  }).toList(),
+                  children: event.categories
+                      .where((category) => category.isNotEmpty)
+                      .map((category) => CategoryChip(category: category))
+                      .toList(),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 4.0),
           Container(
             color: colorScheme.shadow,
             padding: EdgeInsets.symmetric(

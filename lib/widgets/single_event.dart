@@ -103,7 +103,7 @@ class _SingleEventState extends State<SingleEvent> {
                     style: textTheme.bodyMedium,
                   ),
                   SizedBox(height: 8),
-                  Text(_event.longDescription ?? ''),
+                  Text(_event.longDescription),
                   if (_event.price != null && _event.price != '')
                     Text(
                       'Price: ${_event.price}',

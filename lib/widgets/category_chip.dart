@@ -40,6 +40,8 @@ class CategoryChip extends StatelessWidget {
       label: Text(category, style: textStyle),
       backgroundColor: backgroundColor,
       side: BorderSide.none,
+      labelPadding:
+          EdgeInsets.symmetric(horizontal: 2.0, vertical: 0.0), // Adjust labe
     );
   }
 }
