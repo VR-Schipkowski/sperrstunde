@@ -252,6 +252,8 @@ class _HomePageState extends State<HomePage> {
                                   MaterialPageRoute(
                                     builder: (context) => SingleEventPageView(
                                       events: _eventsToShow,
+                                      initialIndex:
+                                          _eventsToShow.indexOf(event),
                                       toggleLike: _toggleLike,
                                     ),
                                   ),
