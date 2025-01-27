@@ -3,6 +3,8 @@ import 'dart:core';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:open_file/open_file.dart';
+import 'package:cross_file/cross_file.dart';
+import 'package:share_plus/share_plus.dart';
 
 class Event {
   final String date;
@@ -141,6 +143,21 @@ END:VCALENDAR
     await file.writeAsString(icalContent);
 
     OpenFile.open(filePath, type: 'text/calendar');
+  }
+
+  Future<void> shareEvent(File imageFile) async {
+    // Create the event details string
+    final eventDetails = '''
+Event: $title
+Description: $description
+Venue: $venue
+Start Time: ${startTime.toLocal()}
+${endTime != null ? 'End Time: ${endTime?.toLocal()}\n' : ''}
+Price: $price
+''';
+
+    // Share the event details and image
+    await Share.shareXFiles([XFile(imageFile.path)], text: eventDetails);
   }
 
   static DateTime _parseTime(String date, String time) {
