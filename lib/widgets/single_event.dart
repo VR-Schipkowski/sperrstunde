@@ -43,8 +43,6 @@ class _SingleEventState extends State<SingleEvent> {
   @override
   Widget build(BuildContext context) {
     ColorScheme colorScheme = Theme.of(context).colorScheme;
-    double dialogWidth =
-        MediaQuery.of(context).size.width * 0.9; // 90% of screen width
 
     return AlertDialog(
       contentPadding: EdgeInsets.zero,
