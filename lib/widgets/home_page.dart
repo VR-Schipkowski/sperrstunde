@@ -218,10 +218,16 @@ class _HomePageState extends State<HomePage> {
                       itemCount: _eventsToShow.length,
                       itemBuilder: (context, index) {
                         var event = _eventsToShow[index];
-
+                        var date = DateHelper.formatDate(event.startTime);
                         bool isFirstEventOfDay = index == 0 ||
-                            DateHelper.isSameDay(event.startTime,
-                                _eventsToShow[index - 1].startTime);
+                            date! !=
+                                DateHelper.formatDate(
+                                    _eventsToShow[index - 1].startTime);
+                        bool isLastEventOfDay =
+                            index == _eventsToShow.length - 1 ||
+                                date !=
+                                    DateHelper.formatDate(
+                                        _eventsToShow[index + 1].startTime);
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
@@ -260,6 +266,11 @@ class _HomePageState extends State<HomePage> {
                                 );
                               },
                             ),
+                            if (!isLastEventOfDay)
+                              Divider(
+                                color: colorScheme.secondary,
+                                thickness: 1,
+                              )
                           ],
                         );
                       },
