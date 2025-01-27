@@ -23,10 +23,12 @@ class EventListElement extends StatelessWidget {
 
     return ListTile(
       leading: SizedBox(
-        width: 80, // Set a fixed width for the leading part
-        child: Text(
-          formattedTime,
-          style: Theme.of(context).textTheme.headlineMedium,
+        width: 70, // Set a fixed width for the leading part
+        child: Center(
+          child: Text(
+            formattedTime,
+            style: Theme.of(context).textTheme.headlineMedium,
+          ),
         ),
       ),
       title: Column(
@@ -50,9 +52,15 @@ class EventListElement extends StatelessWidget {
               ),
             ],
           ),
-          Text(
-            event.title,
-            style: Theme.of(context).textTheme.headlineMedium,
+          SizedBox(height: 4.0),
+          Container(
+            color: colorScheme.shadow,
+            padding: EdgeInsets.symmetric(
+                horizontal: 4.0, vertical: 2.0), // Add some padding
+            child: Text(
+              event.title,
+              style: Theme.of(context).textTheme.headlineMedium,
+            ),
           ),
           Text(event.description,
               style: Theme.of(context).textTheme.bodyMedium),

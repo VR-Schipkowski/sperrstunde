@@ -34,10 +34,10 @@ class FetchService {
         .get(Uri.parse('https://sperrstunde.org/${event.singleEventUrl}'));
     if (response.statusCode == 200) {
       var document = html_parser.parse(response.body);
-      var eventElement = document.getElementsByClassName('single-event').first;
-
-      if (eventElement != null) {
+      var eventElements = document.getElementsByClassName('single-event');
+      if (eventElements.isNotEmpty) {
         // Extract the image URL
+        var eventElement = eventElements.first;
         var imageElement =
             eventElement.querySelector('.single-event-images img');
         if (imageElement != null) {
@@ -48,11 +48,11 @@ class FetchService {
         var descriptionElement =
             eventElement.querySelector('.single-event-description p');
         if (descriptionElement != null) {
-          event.longDescription = descriptionElement.text;
+          event.longDescription = descriptionElement.text.trim();
         }
+      } else {
+        throw Exception('Failed to load single event');
       }
-    } else {
-      throw Exception('Failed to load single event');
     }
   }
 }

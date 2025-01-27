@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
       onSecondary: Colors.white, // Text color on secondary color
       onSurface: Colors.black, // Text color on surface color
       onError: Colors.white, // Text color on error color
+      shadow: Color(0xFFFFB496),
       brightness: Brightness.light, // Brightness (light or dark)
     );
 
@@ -37,7 +38,8 @@ class MyApp extends StatelessWidget {
       onSecondary: Colors.black, // Text color on secondary color
       onSurface: Colors.white, // Text color on surface color
       onError: Colors.black, // Text color on error color
-      brightness: Brightness.dark, // Brightness (light or dark)
+      brightness: Brightness.dark,
+      shadow: Color(0xFFFFB496), // Brightness (light or dark)
     );
 
     final TextTheme baseTextTheme = TextTheme(

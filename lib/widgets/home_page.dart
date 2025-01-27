@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/models/helper/filter.dart';
@@ -220,7 +219,7 @@ class _HomePageState extends State<HomePage> {
                         var event = _eventsToShow[index];
                         var date = DateHelper.formatDate(event.startTime);
                         bool isFirstEventOfDay = index == 0 ||
-                            date! !=
+                            date !=
                                 DateHelper.formatDate(
                                     _eventsToShow[index - 1].startTime);
                         bool isLastEventOfDay =
