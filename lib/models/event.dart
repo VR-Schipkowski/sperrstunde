@@ -4,7 +4,6 @@ import 'dart:core';
 import 'package:path_provider/path_provider.dart';
 import 'dart:io';
 import 'package:open_file/open_file.dart';
-import 'package:cross_file/cross_file.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sperrstunde/services/date_funktions.dart';
 
