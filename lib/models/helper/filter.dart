@@ -3,13 +3,22 @@ import 'package:sperrstunde/models/event.dart';
 class Filter {
   List<String> categories = [];
   String venues = '';
-  Filter({required this.categories, required this.venues});
+  DateTime? startDate;
+  DateTime? endDate;
+  Filter(
+      {required this.categories,
+      required this.venues,
+      this.startDate,
+      this.endDate});
 
   bool checkEvent(Event event) {
     bool matchesCategory = categories.isEmpty ||
         event.categories.any((category) => categories.contains(category));
     bool matchesVenue = venues.isEmpty || event.venue == venues;
-    return matchesCategory && matchesVenue;
+    bool matchesDate =
+        (startDate == null || event.startTime.isAfter(startDate!)) &&
+            (endDate == null || (event.startTime.isBefore(endDate!)));
+    return matchesCategory && matchesVenue && matchesDate;
   }
 }
 
