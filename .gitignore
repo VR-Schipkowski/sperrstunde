@@ -46,3 +46,4 @@ app.*.map.json
 
 # linux
 /linux
+devtools_options.yaml

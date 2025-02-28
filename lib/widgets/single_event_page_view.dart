@@ -19,34 +19,38 @@ class SingleEventPageView extends StatefulWidget {
 
 class _SingleEventPageViewState extends State<SingleEventPageView> {
   PageController _pageController = PageController();
-
+  Set<String> _cachedImages = <String>{};
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: widget.initialIndex);
-    _pageController.addListener(_preloadImages);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _preloadImages(widget.initialIndex);
   }
 
   @override
   void dispose() {
-    _pageController.removeListener(_preloadImages);
     _pageController.dispose();
     super.dispose();
   }
 
-  void _preloadImages() {
-    int currentIndex = _pageController.page?.round() ?? 0;
-    if (currentIndex < widget.events.length - 1) {
-      _precacheImage(widget.events[currentIndex + 1].imageUrl);
-    }
-    if (currentIndex > 0) {
-      _precacheImage(widget.events[currentIndex - 1].imageUrl);
+  void _preloadImages(index) {
+    int currentIndex = index;
+    for (int i = 1; i <= 10; i++) {
+      if (currentIndex + i < widget.events.length) {
+        _precacheImage(widget.events[currentIndex + i].imageUrl);
+      }
     }
   }
 
   void _precacheImage(String? imageUrl) {
-    if (imageUrl != null) {
+    if (imageUrl != null && !_cachedImages.contains(imageUrl)) {
       precacheImage(NetworkImage(imageUrl), context);
+      _cachedImages.add(imageUrl);
     }
   }
 
@@ -55,6 +59,9 @@ class _SingleEventPageViewState extends State<SingleEventPageView> {
     return PageView.builder(
       controller: _pageController,
       itemCount: widget.events.length,
+      onPageChanged: (index) {
+        _preloadImages(index);
+      },
       itemBuilder: (context, index) {
         return SingleEvent(
           event: widget.events[index],

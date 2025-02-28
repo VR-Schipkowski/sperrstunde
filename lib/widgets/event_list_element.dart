@@ -49,6 +49,11 @@ class EventListElement extends StatelessWidget {
                       .toList(),
                 ),
               ),
+              if (event.imageUrl != null)
+                Icon(
+                  Icons.image,
+                  color: colorScheme.primary,
+                ),
             ],
           ),
           Container(
