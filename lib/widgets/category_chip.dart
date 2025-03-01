@@ -18,8 +18,14 @@ final Map<String, Color> categoryColors = {
 
 class CategoryChip extends StatelessWidget {
   final String category;
+  final VoidCallback onPressed;
+  final bool selected;
 
-  CategoryChip({required this.category});
+  CategoryChip({
+    required this.category,
+    required this.onPressed,
+    this.selected = true,
+  });
 
   Color _getTextColor(Color backgroundColor) {
     // Determine if the background color is light or dark
@@ -31,17 +37,21 @@ class CategoryChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = categoryColors[category] ?? Colors.grey;
+    final backgroundColor = selected
+        ? (categoryColors[category] ?? Colors.limeAccent)
+        : Colors.grey;
     final textColor = _getTextColor(backgroundColor);
     final textStyle =
         Theme.of(context).textTheme.bodySmall?.copyWith(color: textColor);
 
-    return Chip(
-      label: Text(category, style: textStyle),
-      backgroundColor: backgroundColor,
-      side: BorderSide.none,
-      labelPadding:
-          EdgeInsets.symmetric(horizontal: 2.0, vertical: 0.0), // Adjust labe
-    );
+    return GestureDetector(
+        onTap: onPressed,
+        child: Chip(
+          label: Text(category, style: textStyle),
+          backgroundColor: backgroundColor,
+          side: BorderSide.none,
+          labelPadding: EdgeInsets.symmetric(
+              horizontal: 2.0, vertical: 0.0), // Adjust labe
+        ));
   }
 }

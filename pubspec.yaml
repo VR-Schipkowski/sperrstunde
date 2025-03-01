@@ -25,6 +25,7 @@ dependencies:
   share_plus: ^10.1.4
   cross_file: ^0.3.4+2
   flutter_cache_manager: ^3.4.1
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:

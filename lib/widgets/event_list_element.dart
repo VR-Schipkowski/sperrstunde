@@ -7,12 +7,16 @@ class EventListElement extends StatelessWidget {
   final Event event;
   final Function(Event) _toggleLike;
   final Function(BuildContext, Event) _showEventDetails;
+  final Function(String) onCategorySelected; // Callback for category selection
+  final Function(String) onVenueSelected; // Callback for venue selection
 
-  EventListElement({
-    required this.event,
-    required Function(Event) toggleLike,
-    required Function(BuildContext, Event) showEventDetails,
-  })  : _toggleLike = toggleLike,
+  EventListElement(
+      {required this.event,
+      required Function(Event) toggleLike,
+      required Function(BuildContext, Event) showEventDetails,
+      required this.onCategorySelected,
+      required this.onVenueSelected})
+      : _toggleLike = toggleLike,
         _showEventDetails = showEventDetails;
 
   @override
@@ -45,7 +49,10 @@ class EventListElement extends StatelessWidget {
                 child: Wrap(
                   children: event.categories
                       .where((category) => category.isNotEmpty)
-                      .map((category) => CategoryChip(category: category))
+                      .map((category) => CategoryChip(
+                            category: category,
+                            onPressed: () => onCategorySelected(category),
+                          ))
                       .toList(),
                 ),
               ),
@@ -67,7 +74,11 @@ class EventListElement extends StatelessWidget {
           ),
           Text(event.description,
               style: Theme.of(context).textTheme.bodyMedium),
-          Text(event.venue, style: Theme.of(context).textTheme.bodySmall),
+          GestureDetector(
+            onTap: () => onVenueSelected(event.venue),
+            child:
+                Text(event.venue, style: Theme.of(context).textTheme.bodySmall),
+          ),
         ],
       ),
       onLongPress: () => _toggleLike(event),

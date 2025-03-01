@@ -3,12 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/models/helper/filter.dart';
+import 'package:sperrstunde/models/venue.dart';
 import 'package:sperrstunde/services/date_funktions.dart';
-import 'package:sperrstunde/services/fech_service.dart';
+import 'package:sperrstunde/services/fetch_service.dart';
 import 'package:sperrstunde/widgets/event_list_element.dart';
 import 'package:sperrstunde/widgets/filter_dialog.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:sperrstunde/widgets/loading_screen.dart';
+import 'package:sperrstunde/widgets/venue_card.dart';
 import 'package:sperrstunde/widgets/single_event_page_view.dart';
 
 class HomePage extends StatefulWidget {
@@ -18,10 +20,11 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   List<Event> _events = [];
+  Map<String, Venue> _venues = {};
   List<Event> _eventsToShow = [];
   Filter _filter = Filter(categories: [], venues: '');
   ValueNotifier<bool> _showOnlyLiked = ValueNotifier(false);
-  ValueNotifier<bool> _showOnlyFilterd = ValueNotifier(false);
+  ValueNotifier<bool> _showOnlyFiltered = ValueNotifier(false);
   late Future<void> _fetchFuture;
 
   @override
@@ -29,16 +32,28 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     _fetchFuture = _fetchWebpage();
     _showOnlyLiked.addListener(_calculateEventsToShow);
-    _showOnlyFilterd.addListener(_calculateEventsToShow);
+    _showOnlyFiltered.addListener(_calculateEventsToShow);
   }
 
   @override
   void dispose() {
     _showOnlyLiked.removeListener(_calculateEventsToShow);
-    _showOnlyFilterd.removeListener(_calculateEventsToShow);
+    _showOnlyFiltered.removeListener(_calculateEventsToShow);
     _showOnlyLiked.dispose();
-    _showOnlyFilterd.dispose();
+    _showOnlyFiltered.dispose();
     super.dispose();
+  }
+
+  void _filterByCategory(String category) {
+    setState(() {
+      if (_filter.categories.contains(category)) {
+        _filter.categories.remove(category);
+      } else {
+        _filter.categories.add(category);
+      }
+      _showOnlyFiltered.value = _filter.isFilterActive();
+      _calculateEventsToShow();
+    });
   }
 
   Future<void> _fetchWebpage() async {
@@ -80,14 +95,41 @@ class _HomePageState extends State<HomePage> {
     await _loadLikes();
     _calculateEventsToShow();
     _loadSingleEventDetailsInBackground(events);
+    _loadVenuesInBackground(events);
+  }
+
+  Future<void> _loadVenuesInBackground(List<Event> events) async {
+    var fetchService = FetchService();
+    Set<String> venuesToLoad = events.map((event) => (event.venueLink)).toSet();
+    venuesToLoad.removeWhere((element) => element == "");
+    for (var venueLink in venuesToLoad) {
+      try {
+        var venue = await fetchService.loadVenue(venueLink);
+        setState(() {
+          _venues[venue.name] = venue;
+        });
+      } catch (e) {
+        FlutterError.reportError(FlutterErrorDetails(exception: e));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading venue: $e')),
+        );
+      }
+    }
   }
 
   Future<void> _loadSingleEventDetailsInBackground(List<Event> events) async {
     var fetchService = FetchService();
     for (var event in events) {
-      await fetchService.loadSingleEvent(event);
-      if (mounted) {
-        setState(() {});
+      try {
+        await fetchService.loadSingleEvent(event);
+        if (mounted) {
+          setState(() {});
+        }
+      } catch (e) {
+        FlutterError.reportError(FlutterErrorDetails(exception: e));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error loading event details: $e')),
+        );
       }
     }
     _saveEvents();
@@ -126,22 +168,20 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _calculateEventsToShow() {
-    if (!_showOnlyFilterd.value && !_showOnlyLiked.value) {
-      setState(() {
-        _eventsToShow = _events;
-      });
+    List<Event> filteredEvents;
+    if (!_showOnlyFiltered.value && !_showOnlyLiked.value) {
+      filteredEvents = _events;
     } else {
-      List<Event> filteredEvents = _events.where((event) {
+      filteredEvents = _events.where((event) {
         bool matchesFilter =
-            !_showOnlyFilterd.value || _filter.checkEvent(event);
+            !_showOnlyFiltered.value || _filter.checkEvent(event);
         bool matchesLiked = !_showOnlyLiked.value || event.liked;
         return matchesFilter && matchesLiked;
       }).toList();
-
-      setState(() {
-        _eventsToShow = filteredEvents;
-      });
     }
+    setState(() {
+      _eventsToShow = filteredEvents;
+    });
   }
 
   void _toggleShowOnlyLiked() {
@@ -162,6 +202,57 @@ class _HomePageState extends State<HomePage> {
       likedEvents.remove(event.title);
     }
     await prefs.setStringList('likedEvents', likedEvents);
+  }
+
+  List<Widget> _buildActiveFilters() {
+    List<Widget> filters = [];
+    if (_filter.categories.isNotEmpty) {
+      filters.add(
+        Wrap(
+          spacing: 8.0,
+          runSpacing: 4.0,
+          children: _filter.categories.map((category) {
+            return Chip(
+              label: Text(category),
+              onDeleted: () {
+                _filterByCategory(category);
+              },
+            );
+          }).toList(),
+        ),
+      );
+    }
+    if (_filter.venues.isNotEmpty) {
+      filters.add(
+        Chip(
+          label: Text(_filter.venues),
+          onDeleted: () {
+            setState(() {
+              _filter.venues = '';
+              _showOnlyFiltered.value = _filter.isFilterActive();
+              _calculateEventsToShow();
+            });
+          },
+        ),
+      );
+    }
+    if (_filter.startDate != null || _filter.endDate != null) {
+      filters.add(
+        Chip(
+          label: Text(
+              '${DateHelper.formatDate(_filter.startDate ?? DateTime.now())} - ${DateHelper.formatDate(_filter.endDate ?? DateTime.now())}'),
+          onDeleted: () {
+            setState(() {
+              _filter.startDate = null;
+              _filter.endDate = null;
+              _showOnlyFiltered.value = _filter.isFilterActive();
+              _calculateEventsToShow();
+            });
+          },
+        ),
+      );
+    }
+    return filters;
   }
 
   @override
@@ -188,15 +279,15 @@ class _HomePageState extends State<HomePage> {
               actions: [
                 IconButton(
                     onPressed: () {
-                      if (_showOnlyFilterd.value) {
+                      if (_showOnlyFiltered.value) {
                         setState(() {
-                          _showOnlyFilterd.value = false;
+                          _showOnlyFiltered.value = false;
                         });
                       } else {
                         _showFilterDialog();
                       }
                     },
-                    icon: Icon(_showOnlyFilterd.value
+                    icon: Icon(_showOnlyFiltered.value
                         ? Icons.filter_list_alt
                         : Icons.filter_list_off_outlined),
                     color: colorScheme.secondary),
@@ -213,67 +304,86 @@ class _HomePageState extends State<HomePage> {
               onRefresh: _fetchWebpage,
               child: _events.isEmpty
                   ? Text('No content found')
-                  : ListView.builder(
-                      itemCount: _eventsToShow.length,
-                      itemBuilder: (context, index) {
-                        var event = _eventsToShow[index];
-                        var date = DateHelper.formatDate(event.startTime);
-                        bool isFirstEventOfDay = index == 0 ||
-                            date !=
-                                DateHelper.formatDate(
-                                    _eventsToShow[index - 1].startTime);
-                        bool isLastEventOfDay =
-                            index == _eventsToShow.length - 1 ||
+                  : Column(children: [
+                      if (_showOnlyFiltered.value && _filter.venues.isNotEmpty)
+                        VenueWidget(
+                            venue: _venues[_filter.venues] ??
+                                Venue.defaultVenue(_filter.venues)),
+                      if (_showOnlyFiltered.value)
+                        Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: _buildActiveFilters(),
+                          ),
+                        ),
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: _eventsToShow.length,
+                          itemBuilder: (context, index) {
+                            var event = _eventsToShow[index];
+                            var date = DateHelper.formatDate(event.startTime);
+                            bool isFirstEventOfDay = index == 0 ||
                                 date !=
                                     DateHelper.formatDate(
-                                        _eventsToShow[index + 1].startTime);
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (isFirstEventOfDay)
-                              Container(
-                                width: double.infinity,
-                                color: colorScheme.primary,
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 8.0),
-                                child: Align(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    DateHelper.formatDate(event.startTime),
-                                    style: TextStyle(
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      color: colorScheme.onPrimary,
+                                        _eventsToShow[index - 1].startTime);
+                            bool isLastEventOfDay =
+                                index == _eventsToShow.length - 1 ||
+                                    date !=
+                                        DateHelper.formatDate(
+                                            _eventsToShow[index + 1].startTime);
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (isFirstEventOfDay)
+                                  Container(
+                                    width: double.infinity,
+                                    color: colorScheme.primary,
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 8.0),
+                                    child: Align(
+                                      alignment: Alignment.center,
+                                      child: Text(
+                                        DateHelper.formatDate(event.startTime),
+                                        style: TextStyle(
+                                          fontSize: 24,
+                                          fontWeight: FontWeight.bold,
+                                          color: colorScheme.onPrimary,
+                                        ),
+                                      ),
                                     ),
                                   ),
+                                EventListElement(
+                                  event: event,
+                                  toggleLike: _toggleLike,
+                                  showEventDetails: (context, event) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (context) =>
+                                            SingleEventPageView(
+                                          events: _eventsToShow,
+                                          initialIndex:
+                                              _eventsToShow.indexOf(event),
+                                          toggleLike: _toggleLike,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  onCategorySelected: _filterByCategory,
+                                  onVenueSelected: _filterByVenue,
                                 ),
-                              ),
-                            EventListElement(
-                              event: event,
-                              toggleLike: _toggleLike,
-                              showEventDetails: (context, event) {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => SingleEventPageView(
-                                      events: _eventsToShow,
-                                      initialIndex:
-                                          _eventsToShow.indexOf(event),
-                                      toggleLike: _toggleLike,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                            if (!isLastEventOfDay)
-                              Divider(
-                                color: colorScheme.secondary,
-                                thickness: 1,
-                              )
-                          ],
-                        );
-                      },
-                    ),
+                                if (!isLastEventOfDay)
+                                  Divider(
+                                    color: colorScheme.secondary,
+                                    thickness: 1,
+                                  )
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ]),
             ),
           );
         }
@@ -293,21 +403,33 @@ class _HomePageState extends State<HomePage> {
             allEvents: _events,
             onApply: (filter) {
               setState(() {
-                if (filter.categories.isEmpty && filter.venues.isEmpty) {
-                  _showOnlyFilterd.value = false;
-                } else {
+                if (filter.isFilterActive()) {
                   _filter = filter;
-                  _showOnlyFilterd.value = true;
+                  _showOnlyFiltered.value = true;
+                } else {
+                  _showOnlyFiltered.value = false;
                 }
               });
             },
             onCancel: () {
               setState(() {
-                _showOnlyFilterd.value = false;
+                _showOnlyFiltered.value = false;
               });
             },
             filter: _filter);
       },
     );
+  }
+
+  _filterByVenue(String venue) {
+    setState(() {
+      if (_filter.venues == venue) {
+        _filter.venues = '';
+      } else {
+        _filter.venues = venue;
+      }
+      _showOnlyFiltered.value = _filter.isFilterActive();
+      _calculateEventsToShow();
+    });
   }
 }

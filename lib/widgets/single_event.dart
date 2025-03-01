@@ -74,7 +74,7 @@ class _SingleEventState extends State<SingleEvent> {
                     spacing: 8.0,
                     runSpacing: 4.0,
                     children: _event.categories.map((category) {
-                      return CategoryChip(category: category);
+                      return CategoryChip(category: category, onPressed: () {});
                     }).toList(),
                   ),
                   SizedBox(height: 8),

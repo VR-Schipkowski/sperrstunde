@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:multi_select_flutter/multi_select_flutter.dart';
 import 'package:sperrstunde/models/event.dart';
 import 'package:sperrstunde/models/helper/filter.dart';
+import 'package:sperrstunde/widgets/category_chip.dart';
 
 class FilterDialogWidget extends StatefulWidget {
   final List<Event> allEvents;
@@ -34,6 +34,7 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
     tempVenue = widget.filter.venues;
     tempStartDate = widget.filter.startDate;
     tempEndDate = widget.filter.endDate;
+    print(widget.filter);
   }
 
   void resetFilters() {
@@ -46,6 +47,17 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
       widget.filter.venues = '';
       widget.filter.startDate = null;
       widget.filter.endDate = null;
+    });
+  }
+
+  void _filterByCategory(String category) {
+    setState(() {
+      if (tempCategories.contains(category)) {
+        tempCategories.remove(category);
+      } else {
+        tempCategories.add(category);
+      }
+      widget.filter.categories = tempCategories;
     });
   }
 
@@ -91,36 +103,18 @@ class _FilterDialogWidgetState extends State<FilterDialogWidget> {
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          MultiSelectDialogField(
-            items: sortedCategories
-                .map((category) => MultiSelectItem(category, category))
-                .toList(),
-            title: Text('Categories'),
-            selectedColor: Colors.blue,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(10)),
-              border: Border.all(
-                color: Colors.grey,
-                width: 1,
-              ),
-            ),
-            buttonIcon: Icon(
-              Icons.category,
-              color: Colors.blue,
-            ),
-            buttonText: Text(
-              'Select Categories',
-              style: TextStyle(
-                color: Colors.blue[800],
-                fontSize: 16,
-              ),
-            ),
-            onConfirm: (results) {
-              tempCategories = results.cast<String>();
-              widget.filter.categories = tempCategories;
-            },
-            initialValue: tempCategories,
+          Wrap(
+            spacing: 8.0,
+            runSpacing: 4.0,
+            children: sortedCategories.map((category) {
+              return CategoryChip(
+                category: category,
+                onPressed: () => _filterByCategory(category),
+                selected: tempCategories.contains(category),
+              );
+            }).toList(),
           ),
+          SizedBox(height: 16),
           DropdownButtonFormField<String>(
             decoration: InputDecoration(labelText: 'Venue'),
             value: tempVenue.isNotEmpty ? tempVenue : null,

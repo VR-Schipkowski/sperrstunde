@@ -20,11 +20,11 @@ class Filter {
             (endDate == null || (event.startTime.isBefore(endDate!)));
     return matchesCategory && matchesVenue && matchesDate;
   }
-}
 
-class FilterOptions {
-  Set<String> categories = {};
-  Set<String> venues = {};
-
-  FilterOptions({required this.categories, required this.venues});
+  bool isFilterActive() {
+    return categories.isNotEmpty ||
+        venues.isNotEmpty ||
+        startDate != null ||
+        endDate != null;
+  }
 }
